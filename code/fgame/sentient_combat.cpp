@@ -770,8 +770,21 @@ void Sentient::EventDeactivateWeapon(Event *ev)
         return;
     }
 
+     // Only deactivate the weapon that is actually in the putaway state.
+    // A weapon switch is asynchronous: the previous weapon can finish its
+    // putaway animation after the new weapon has already been activated.
+    // In that case, blindly deactivating the current weapon would deactivate
+    // the NEW weapon and leave the player unarmed.
+    Weapon *weapon = GetActiveWeapon(hand);
+    if (!weapon || !weapon->GetPutaway()) {
+        return;
+    }
+
     DeactivateWeapon(hand);
-    edict->s.eFlags |= EF_UNARMED;
+
+    if (!GetActiveWeapon(WEAPON_MAIN)) {
+        edict->s.eFlags |= EF_UNARMED;
+    }
 }
 
 void Sentient::ActivateWeapon(Weapon *weapon, weaponhand_t hand)
