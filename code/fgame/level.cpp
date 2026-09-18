@@ -864,49 +864,32 @@ void Level::CleanUp(qboolean samemap, qboolean resetConfigStrings)
 {
     int i;
 
-    gi.Printf("CLEANUP DEBUG: START samemap=%d resetConfigStrings=%d\n", samemap, resetConfigStrings);
+    gi.Printf("CLEANUP DEBUG 2: START mapname=%s current_map=%s mapscript=%s\n", mapname.c_str(), current_map ? current_map : "<null>", m_mapscript.c_str());
 
     DisableListenerNotify++;
-    gi.Printf("CLEANUP DEBUG: DisableListenerNotify done\n");
 
     // Added in OPM
     //  When resetConfigStrings is 0, the game is shutting down
     if (!resetConfigStrings) {
-        gi.Printf("CLEANUP DEBUG: before scriptDelegate_exit\n");
-
         Event *event = new Event;
         // Different map = true (1)
         event->AddInteger(1);
         scriptDelegate_exit.Trigger(*event);
         scriptedEvents[SE_INTERMISSION].Trigger(event);
-
-        gi.Printf("CLEANUP DEBUG: after scriptDelegate_exit\n");
     }
 
     if (g_gametype->integer != GT_SINGLE_PLAYER) {
-        gi.Printf("CLEANUP DEBUG: before dmManager.Reset\n");
         dmManager.Reset();
-        gi.Printf("CLEANUP DEBUG: after dmManager.Reset\n");
     }
 
-    gi.Printf("CLEANUP DEBUG: before Director.Reset\n");
     Director.Reset(samemap);
-    gi.Printf("CLEANUP DEBUG: after Director.Reset\n");
 
-    gi.Printf("CLEANUP DEBUG: before ClearCachedStatemaps\n");
     ClearCachedStatemaps();
-    gi.Printf("CLEANUP DEBUG: after ClearCachedStatemaps\n");
 
     // clear active current bots
-    gi.Printf("CLEANUP DEBUG: before G_ResetBots\n");
     G_ResetBots();
-    gi.Printf("CLEANUP DEBUG: after G_ResetBots\n");
 
-    gi.Printf("CLEANUP DEBUG: before navigationMap.CleanUp\n");
     navigationMap.CleanUp(samemap);
-    gi.Printf("CLEANUP DEBUG: after navigationMap.CleanUp\n");
-
-    gi.Printf("CLEANUP DEBUG: before active_edicts cleanup\n");
 
     assert(active_edicts.next);
     assert(active_edicts.next->prev == &active_edicts);
@@ -916,8 +899,6 @@ void Level::CleanUp(qboolean samemap, qboolean resetConfigStrings)
     assert(free_edicts.next->prev == &free_edicts);
     assert(free_edicts.prev);
     assert(free_edicts.prev->next == &free_edicts);
-
-    int cleanupCount = 0;
 
     while (active_edicts.next != &active_edicts) {
         assert(active_edicts.next != &free_edicts);
@@ -937,22 +918,18 @@ void Level::CleanUp(qboolean samemap, qboolean resetConfigStrings)
         } else {
             FreeEdict(active_edicts.next);
         }
-
-        cleanupCount++;
-
-        if ((cleanupCount % 100) == 0) {
-            gi.Printf("CLEANUP DEBUG: deleted %d active entities\n", cleanupCount);
-        }
     }
-
-    gi.Printf("CLEANUP DEBUG: active_edicts cleanup complete, deleted %d entities\n", cleanupCount);
 
     //
     // Remove all archived entities
     //
+    gi.Printf("CLEANUP DEBUG 2: before archived entities cleanup count=%d\n", m_SimpleArchivedEntities.NumObjects());
+
     for (i = m_SimpleArchivedEntities.NumObjects(); i > 0; i--) {
         delete m_SimpleArchivedEntities.ObjectAt(i);
     }
+
+    gi.Printf("CLEANUP DEBUG 2: after archived entities cleanup\n");
 
     cinematic = false;
     ai_on     = true;
@@ -961,65 +938,103 @@ void Level::CleanUp(qboolean samemap, qboolean resetConfigStrings)
     mission_failed = false;
     died_already   = false;
 
+    gi.Printf("CLEANUP DEBUG 2: before LocateGameData\n");
     globals.num_entities = game.maxclients + 1;
     gi.LocateGameData(g_entities, game.maxclients + 1, sizeof(gentity_t), &game.clients[0].ps, sizeof(gclient_t));
+    gi.Printf("CLEANUP DEBUG 2: after LocateGameData\n");
 
     // clear up all AI node information
+    gi.Printf("CLEANUP DEBUG 2: before PathManager.ResetNodes\n");
     PathManager.ResetNodes();
+    gi.Printf("CLEANUP DEBUG 2: after PathManager.ResetNodes\n");
 
     // clear out automatic cameras
+    gi.Printf("CLEANUP DEBUG 2: before automatic_cameras.ClearObjectList\n");
     automatic_cameras.ClearObjectList();
+    gi.Printf("CLEANUP DEBUG 2: after automatic_cameras.ClearObjectList\n");
 
     // clear out level script variables
+    gi.Printf("CLEANUP DEBUG 2: before level.Vars()->ClearList\n");
     level.Vars()->ClearList();
+    gi.Printf("CLEANUP DEBUG 2: after level.Vars()->ClearList\n");
 
     // Clear out parm vars
+    gi.Printf("CLEANUP DEBUG 2: before parm.Vars()->ClearList\n");
     parm.Vars()->ClearList();
+    gi.Printf("CLEANUP DEBUG 2: after parm.Vars()->ClearList\n");
 
     // initialize the game variables
     // these get restored by the persistant data, so we can safely clear them here
+    gi.Printf("CLEANUP DEBUG 2: before game.Vars()->ClearList\n");
     game.Vars()->ClearList();
+    gi.Printf("CLEANUP DEBUG 2: after game.Vars()->ClearList\n");
 
     // clearout any waiting events
+    gi.Printf("CLEANUP DEBUG 2: before L_ClearEventList\n");
     L_ClearEventList();
+    gi.Printf("CLEANUP DEBUG 2: after L_ClearEventList\n");
 
     // reset all edicts
+    gi.Printf("CLEANUP DEBUG 2: before ResetEdicts\n");
     ResetEdicts();
+    gi.Printf("CLEANUP DEBUG 2: after ResetEdicts\n");
 
     // reset all grenade hints
+    gi.Printf("CLEANUP DEBUG 2: before GrenadeHint::ResetHints\n");
     GrenadeHint::ResetHints();
+    gi.Printf("CLEANUP DEBUG 2: after GrenadeHint::ResetHints\n");
 
     // reset projectile targets
+    gi.Printf("CLEANUP DEBUG 2: before ClearProjectileTargets\n");
     ClearProjectileTargets();
+    gi.Printf("CLEANUP DEBUG 2: after ClearProjectileTargets\n");
 
     // Reset the boss health cvar
+    gi.Printf("CLEANUP DEBUG 2: before bosshealth reset\n");
     gi.cvar_set("bosshealth", "0");
+    gi.Printf("CLEANUP DEBUG 2: after bosshealth reset\n");
 
+    gi.Printf("CLEANUP DEBUG 2: before Actor::ResetBodyQueue\n");
     Actor::ResetBodyQueue();
-    Health::ResetHealthQueue();
+    gi.Printf("CLEANUP DEBUG 2: after Actor::ResetBodyQueue\n");
 
+    gi.Printf("CLEANUP DEBUG 2: before Health::ResetHealthQueue\n");
+    Health::ResetHealthQueue();
+    gi.Printf("CLEANUP DEBUG 2: after Health::ResetHealthQueue\n");
+
+    gi.Printf("CLEANUP DEBUG 2: before world target cleanup\n");
     if (world) {
         world->FreeTargetList();
     }
+    gi.Printf("CLEANUP DEBUG 2: after world target cleanup\n");
 
+    gi.Printf("CLEANUP DEBUG 2: before num_earthquakes reset\n");
     num_earthquakes = 0;
+    gi.Printf("CLEANUP DEBUG 2: after num_earthquakes reset\n");
 
+    gi.Printf("CLEANUP DEBUG 2: before AddWaitTill base events\n");
     AddWaitTill(STRING_PRESPAWN);
     AddWaitTill(STRING_SPAWN);
     AddWaitTill(STRING_PLAYERSPAWN);
     AddWaitTill(STRING_SKIP);
     AddWaitTill(STRING_POSTTHINK);
+    gi.Printf("CLEANUP DEBUG 2: after AddWaitTill base events\n");
 
     if (g_gametype->integer >= GT_TEAM_ROUNDS && g_gametype->integer <= GT_LIBERATION) {
+        gi.Printf("CLEANUP DEBUG 2: before AddWaitTill roundstart\n");
         AddWaitTill(STRING_ROUNDSTART);
+        gi.Printf("CLEANUP DEBUG 2: after AddWaitTill roundstart\n");
     }
 
     if (g_gametype->integer > GT_FFA) {
+        gi.Printf("CLEANUP DEBUG 2: before AddWaitTill team events\n");
         AddWaitTill(STRING_ALLIESWIN);
         AddWaitTill(STRING_AXISWIN);
         AddWaitTill(STRING_DRAW);
+        gi.Printf("CLEANUP DEBUG 2: after AddWaitTill team events\n");
     }
 
+    gi.Printf("CLEANUP DEBUG 2: before resetConfigStrings block\n");
     if (resetConfigStrings) {
         gi.setConfigstring(CS_RAIN_DENSITY, "0");
         gi.setConfigstring(CS_RAIN_SPEED, "2048");
@@ -1042,12 +1057,15 @@ void Level::CleanUp(qboolean samemap, qboolean resetConfigStrings)
         gi.setConfigstring(CS_VOTE_NO, "");
         gi.setConfigstring(CS_VOTE_UNDECIDED, "");
     }
+    gi.Printf("CLEANUP DEBUG 2: after resetConfigStrings block\n");
 
+    gi.Printf("CLEANUP DEBUG 2: before final cleanup\n");
     DisableListenerNotify--;
 
     svsStartFloatTime = svsFloatTime;
 
     FreeLandmarks();
+    gi.Printf("CLEANUP DEBUG 2: END\n");
 }
 
 /*
