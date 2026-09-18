@@ -864,30 +864,49 @@ void Level::CleanUp(qboolean samemap, qboolean resetConfigStrings)
 {
     int i;
 
+    gi.Printf("CLEANUP DEBUG: START samemap=%d resetConfigStrings=%d\n", samemap, resetConfigStrings);
+
     DisableListenerNotify++;
+    gi.Printf("CLEANUP DEBUG: DisableListenerNotify done\n");
 
     // Added in OPM
     //  When resetConfigStrings is 0, the game is shutting down
     if (!resetConfigStrings) {
+        gi.Printf("CLEANUP DEBUG: before scriptDelegate_exit\n");
+
         Event *event = new Event;
         // Different map = true (1)
         event->AddInteger(1);
         scriptDelegate_exit.Trigger(*event);
         scriptedEvents[SE_INTERMISSION].Trigger(event);
+
+        gi.Printf("CLEANUP DEBUG: after scriptDelegate_exit\n");
     }
 
     if (g_gametype->integer != GT_SINGLE_PLAYER) {
+        gi.Printf("CLEANUP DEBUG: before dmManager.Reset\n");
         dmManager.Reset();
+        gi.Printf("CLEANUP DEBUG: after dmManager.Reset\n");
     }
 
+    gi.Printf("CLEANUP DEBUG: before Director.Reset\n");
     Director.Reset(samemap);
+    gi.Printf("CLEANUP DEBUG: after Director.Reset\n");
 
+    gi.Printf("CLEANUP DEBUG: before ClearCachedStatemaps\n");
     ClearCachedStatemaps();
+    gi.Printf("CLEANUP DEBUG: after ClearCachedStatemaps\n");
 
     // clear active current bots
+    gi.Printf("CLEANUP DEBUG: before G_ResetBots\n");
     G_ResetBots();
+    gi.Printf("CLEANUP DEBUG: after G_ResetBots\n");
 
+    gi.Printf("CLEANUP DEBUG: before navigationMap.CleanUp\n");
     navigationMap.CleanUp(samemap);
+    gi.Printf("CLEANUP DEBUG: after navigationMap.CleanUp\n");
+
+    gi.Printf("CLEANUP DEBUG: before active_edicts cleanup\n");
 
     assert(active_edicts.next);
     assert(active_edicts.next->prev == &active_edicts);
@@ -897,6 +916,8 @@ void Level::CleanUp(qboolean samemap, qboolean resetConfigStrings)
     assert(free_edicts.next->prev == &free_edicts);
     assert(free_edicts.prev);
     assert(free_edicts.prev->next == &free_edicts);
+
+    int cleanupCount = 0;
 
     while (active_edicts.next != &active_edicts) {
         assert(active_edicts.next != &free_edicts);
@@ -916,7 +937,15 @@ void Level::CleanUp(qboolean samemap, qboolean resetConfigStrings)
         } else {
             FreeEdict(active_edicts.next);
         }
+
+        cleanupCount++;
+
+        if ((cleanupCount % 100) == 0) {
+            gi.Printf("CLEANUP DEBUG: deleted %d active entities\n", cleanupCount);
+        }
     }
+
+    gi.Printf("CLEANUP DEBUG: active_edicts cleanup complete, deleted %d entities\n", cleanupCount);
 
     //
     // Remove all archived entities
