@@ -65,7 +65,24 @@ VehicleCollisionEntity::VehicleCollisionEntity(void)
         return;
     }
 
-    gi.Error(ERR_DROP, "VehicleCollisionEntity Created with no parameters!\n");
+    // A VehicleCollisionEntity normally belongs to a Vehicle and is
+    // created with the owner-aware constructor. However, map/script
+    // entity creation can instantiate the class through the default
+    // constructor. Do not terminate the entire server in that case.
+    //
+    // Without an owner this entity must not forward damage/events to
+    // another entity, but it can safely exist as a non-damaging entity.
+    m_pOwner   = NULL;
+    takedamage = DAMAGE_NO;
+
+    edict->s.eType = ET_GENERAL;
+
+    showModel();
+    setMoveType(MOVETYPE_PUSH);
+    setSolidType(SOLID_NOT);
+
+    edict->clipmask |= MASK_VEHICLE;
+    edict->s.eFlags |= EF_LINKANGLES;
 }
 
 void VehicleCollisionEntity::GetOwner(Event *ev)
@@ -86,12 +103,16 @@ void VehicleCollisionEntity::NotSolid(void)
 
 void VehicleCollisionEntity::EventDamage(Event *ev)
 {
-    m_pOwner->ProcessEvent(*ev);
+    if (m_pOwner) {
+        m_pOwner->ProcessEvent(*ev);
+    }
 }
 
 void VehicleCollisionEntity::Used(Event *ev)
 {
-    m_pOwner->ProcessEvent(*ev);
+    if (m_pOwner) {
+        m_pOwner->ProcessEvent(*ev);
+    }
 }
 
 Entity *VehicleCollisionEntity::GetOwner() const
