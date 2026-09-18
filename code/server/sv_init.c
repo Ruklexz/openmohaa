@@ -727,17 +727,47 @@ void SV_SpawnServer( const char *server, qboolean loadgame, qboolean restart, qb
 		keep_scripts = qtrue;
 	}
 
+		Com_Printf("INIT DEBUG: before ge->Cleanup()\n");
+
 	ge->Cleanup( keep_scripts );
+
+	Com_Printf("INIT DEBUG: after ge->Cleanup()\n");
+
+	Com_Printf("INIT DEBUG: before ge->SetTime()\n");
+
 	ge->SetTime( svs.startTime, svs.time );
+
+	Com_Printf("INIT DEBUG: after ge->SetTime()\n");
+
+	Com_Printf("INIT DEBUG: before UI_LoadResource *133\n");
 
 	UI_LoadResource( "*133" );
 
+	Com_Printf("INIT DEBUG: after UI_LoadResource *133\n");
+
+	Com_Printf("INIT DEBUG: before SV_ClearModelUserCounts()\n");
+
 	SV_ClearModelUserCounts();
 
+	Com_Printf("INIT DEBUG: after SV_ClearModelUserCounts()\n");
+
+	Com_Printf("INIT DEBUG: before TIKI_End()\n");
+
 	TIKI_End();
+
+	Com_Printf("INIT DEBUG: after TIKI_End()\n");
+
+	Com_Printf("INIT DEBUG: before TIKI_Begin()\n");
+
 	TIKI_Begin();
 
+	Com_Printf("INIT DEBUG: after TIKI_Begin()\n");
+
+	Com_Printf("INIT DEBUG: before UI_LoadResource *134\n");
+
 	UI_LoadResource( "*134" );
+
+	Com_Printf("INIT DEBUG: after UI_LoadResource *134\n");
 
 	if( differentmap )
 	{
