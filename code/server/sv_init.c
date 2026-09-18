@@ -223,12 +223,46 @@ SV_SoundIndex
 */
 int SV_SoundIndex( const char *name, qboolean streamed )
 {
-	char buf[ 1024 ];
+    int i;
+    char buf[1024];
 
-	Q_strncpyz( buf, name, sizeof(buf) );
-	Q_strcat( buf, sizeof(buf), va( "%d", streamed ) );
+    if (!name || !name[0]) {
+        return 0;
+    }
 
-	return SV_FindIndex( buf, CS_SOUNDS, MAX_SOUNDS, qtrue );
+    Q_strncpyz(buf, name, sizeof(buf));
+    Q_strcat(buf, sizeof(buf), va("%d", streamed));
+
+    /*
+     * Sound configstrings are a hard protocol limit.
+     *
+     * Do not crash the entire dedicated server when a custom map
+     * exhausts MAX_SOUNDS. Reuse existing identical entries and
+     * use the first genuinely free slot. If no slot exists, simply
+     * suppress this sound.
+     */
+    for (i = 1; i < MAX_SOUNDS; i++) {
+        char *s = sv.configstrings[CS_SOUNDS + i];
+
+        if (!s || !s[0]) {
+            SV_SetConfigstring(CS_SOUNDS + i, buf);
+            return i;
+        }
+
+        if (!Q_stricmp(s, buf)) {
+            return i;
+        }
+    }
+
+    Com_Printf(
+        "WARNING: SV_SoundIndex: MAX_SOUNDS (%d) exhausted, "
+        "suppressing sound '%s' streamed=%d\n",
+        MAX_SOUNDS,
+        name,
+        streamed
+    );
+
+    return 0;
 }
 
 /*
