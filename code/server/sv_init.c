@@ -769,24 +769,50 @@ void SV_SpawnServer( const char *server, qboolean loadgame, qboolean restart, qb
 
 	Com_Printf("INIT DEBUG: after UI_LoadResource *134\n");
 
-	if( differentmap )
+		if( differentmap )
 	{
 		char filename[ MAX_QPATH ];
 
+		Com_Printf("INIT DEBUG: before TIKI_FreeAll()\n");
+
 		TIKI_FreeAll();
+
+		Com_Printf("INIT DEBUG: after TIKI_FreeAll()\n");
+
+		Com_Printf("INIT DEBUG: before CL_UseLargeLightmap()\n");
+
 		if ( CL_UseLargeLightmap( mapname ) ) {
+			Com_Printf("INIT DEBUG: using large lightmap\n");
+
 			Com_sprintf( filename, sizeof( filename ), "maps/%s.bsp", mapname );
 		} else {
+			Com_Printf("INIT DEBUG: using small lightmap\n");
+
 			// Added in 2.0
 			Com_sprintf( filename, sizeof( filename ), "maps/%s_sml.bsp", mapname );
 		}
+
+		Com_Printf("INIT DEBUG: BSP filename = %s\n", filename);
+
+		Com_Printf("INIT DEBUG: before CM_LoadMap()\n");
+
 		CM_LoadMap( filename, qfalse, &checksum );
 
+		Com_Printf("INIT DEBUG: after CM_LoadMap()\n");
+
 		// set checksum
+		Com_Printf("INIT DEBUG: before Cvar_Set sv_mapChecksum\n");
+
 		Cvar_Set( "sv_mapChecksum", va( "%i", checksum ) );
 
+		Com_Printf("INIT DEBUG: after Cvar_Set sv_mapChecksum\n");
+
 		// set serverinfo visible name
+		Com_Printf("INIT DEBUG: before Cvar_Set mapname\n");
+
 		Cvar_Set( "mapname", server );
+
+		Com_Printf("INIT DEBUG: after Cvar_Set mapname\n");
 	}
 
 	CL_InitClientSavedData();
