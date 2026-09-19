@@ -815,7 +815,7 @@ void SV_SpawnServer( const char *server, qboolean loadgame, qboolean restart, qb
 		Com_Printf("INIT DEBUG: after Cvar_Set mapname\n");
 	}
 
-		Com_Printf("INIT DEBUG: BEFORE CL_InitClientSavedData()\n");
+	Com_Printf("INIT DEBUG 3: BEFORE CL_InitClientSavedData() [SKIPPED]\n");
 
 	// TEMPORARY DEBUG:
 	// Skip client saved-data initialization to determine whether
@@ -823,9 +823,12 @@ void SV_SpawnServer( const char *server, qboolean loadgame, qboolean restart, qb
 	// This will be restored after the source of the crash is identified.
 	// CL_InitClientSavedData();
 
-	Com_Printf("INIT DEBUG: AFTER CL_InitClientSavedData() [SKIPPED]\n");
+	Com_Printf("INIT DEBUG 3: AFTER CL_InitClientSavedData() [SKIPPED]\n");
+
+	Com_Printf("INIT DEBUG 3: BEFORE UI_LoadResource *135\n");
 
 	UI_LoadResource( "*135" );
+	Com_Printf("INIT DEBUG 3: AFTER UI_LoadResource *135\n");
 
 	if( differentmap )
 	{
@@ -838,34 +841,53 @@ void SV_SpawnServer( const char *server, qboolean loadgame, qboolean restart, qb
 		sv.serverId = com_frameTime;
 	}
 
+	Com_Printf("INIT DEBUG 3: BEFORE Cvar_Set sv_serverid\n");
 	Cvar_Set( "sv_serverid", va( "%i", sv.serverId ) );
+	Com_Printf("INIT DEBUG 3: AFTER Cvar_Set sv_serverid\n");
 
 	// toggle the server bit so clients can detect that a
 	// server has changed
 	svs.snapFlagServerBit ^= SNAPFLAG_SERVERCOUNT;
+	Com_Printf("INIT DEBUG 3: AFTER snapFlagServerBit\n");
 
+	Com_Printf("INIT DEBUG 3: BEFORE CM_ResetAreaPortals()\n");
 	CM_ResetAreaPortals();
+	Com_Printf("INIT DEBUG 3: AFTER CM_ResetAreaPortals()\n");
 
+	Com_Printf("INIT DEBUG 3: BEFORE UI_LoadResource *136\n");
 	UI_LoadResource( "*136" );
+	Com_Printf("INIT DEBUG 3: AFTER UI_LoadResource *136\n");
 
 	// clear soundtrack
 	if( !loadgame ) {
+		Com_Printf("INIT DEBUG 3: BEFORE SV_SetConfigstring CS_MUSIC\n");
 		SV_SetConfigstring( CS_MUSIC, "none" );
+		Com_Printf("INIT DEBUG 3: AFTER SV_SetConfigstring CS_MUSIC\n");
 	}
 
 	// clear physics interaction links
+	Com_Printf("INIT DEBUG 3: BEFORE SV_ClearWorld()\n");
 	SV_ClearWorld();
+	Com_Printf("INIT DEBUG 3: AFTER SV_ClearWorld()\n");
 
+	Com_Printf("INIT DEBUG 3: BEFORE UI_LoadResource *137\n");
 	UI_LoadResource( "*137" );
+	Com_Printf("INIT DEBUG 3: AFTER UI_LoadResource *137\n");
 
 	// set game dll map
+	Com_Printf("INIT DEBUG 3: BEFORE ge->SetMap()\n");
 	ge->SetMap( sv_mapname->string );
+	Com_Printf("INIT DEBUG 3: AFTER ge->SetMap()\n");
 
 	if( !keep_scripts ) {
+		Com_Printf("INIT DEBUG 3: BEFORE ge->Precache()\n");
 		ge->Precache();
+		Com_Printf("INIT DEBUG 3: AFTER ge->Precache()\n");
 	}
 
+	Com_Printf("INIT DEBUG 3: BEFORE UI_LoadResource *138\n");
 	UI_LoadResource( "*138" );
+	Com_Printf("INIT DEBUG 3: AFTER UI_LoadResource *138\n");
 
 	if( loadgame )
 	{
@@ -883,18 +905,26 @@ void SV_SpawnServer( const char *server, qboolean loadgame, qboolean restart, qb
 		}
 	}
 
+	Com_Printf("INIT DEBUG 3: BEFORE UI_LoadResource *139\n");
 	UI_LoadResource( "*139" );
+	Com_Printf("INIT DEBUG 3: AFTER UI_LoadResource *139\n");
 
 	if( !loadgame )
 	{
 		// load and spawn all other entities
 		svs.areabits_warning_time = 0;
+		Com_Printf("INIT DEBUG 3: BEFORE UI_LoadResource *139a\n");
 		UI_LoadResource( "*139a" );
+		Com_Printf("INIT DEBUG 3: AFTER UI_LoadResource *139a\n");
 
 		// tell the game dll to spawn entities
+		Com_Printf("INIT DEBUG 3: BEFORE ge->SpawnEntities()\n");
 		ge->SpawnEntities( CM_EntityString(), svs.time );
+		Com_Printf("INIT DEBUG 3: AFTER ge->SpawnEntities()\n");
 
+		Com_Printf("INIT DEBUG 3: BEFORE UI_LoadResource *140\n");
 		UI_LoadResource( "*140" );
+		Com_Printf("INIT DEBUG 3: AFTER UI_LoadResource *140\n");
 
 		p = ge->errorMessage;
 		if( p )
@@ -920,8 +950,10 @@ void SV_SpawnServer( const char *server, qboolean loadgame, qboolean restart, qb
 		// run a few frames to allow everything to settle
 		for( i = 0; i < 3; i++ )
 		{
+			Com_Printf("INIT DEBUG 3: BEFORE ge->RunFrame(%d)\n", i + 1);
 			svs.time += 100;
 			ge->RunFrame( svs.time, 100 );
+			Com_Printf("INIT DEBUG 3: AFTER ge->RunFrame(%d)\n", i + 1);
 
 			p = ge->errorMessage;
 			if( p )
@@ -934,12 +966,16 @@ void SV_SpawnServer( const char *server, qboolean loadgame, qboolean restart, qb
 		svs.mapTime = svs.time - svs.startTime;
 	}
 
+	Com_Printf("INIT DEBUG 3: BEFORE UI_LoadResource *142\n");
 	UI_LoadResource( "*142" );
+	Com_Printf("INIT DEBUG 3: AFTER UI_LoadResource *142\n");
 
 	if( differentmap )
 	{
 		// create a baseline for more efficient communications
+		Com_Printf("INIT DEBUG 3: BEFORE SV_CreateBaseline()\n");
 		SV_CreateBaseline();
+		Com_Printf("INIT DEBUG 3: AFTER SV_CreateBaseline()\n");
 
 		for( i = 0; i < svs.iNumClients; i++ ) {
 			// send the new gamestate to all connected clients
@@ -1062,6 +1098,8 @@ void SV_SpawnServer( const char *server, qboolean loadgame, qboolean restart, qb
 			}
 		}
 	}
+
+	Com_Printf("INIT DEBUG 3: BEFORE final server initialization section\n");
 
 	Q_strncpyz(svs.gameName, "current", sizeof(svs.gameName) );
 
