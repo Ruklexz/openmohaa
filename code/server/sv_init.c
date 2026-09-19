@@ -815,7 +815,15 @@ void SV_SpawnServer( const char *server, qboolean loadgame, qboolean restart, qb
 		Com_Printf("INIT DEBUG: after Cvar_Set mapname\n");
 	}
 
-	CL_InitClientSavedData();
+		Com_Printf("INIT DEBUG: BEFORE CL_InitClientSavedData()\n");
+
+	// TEMPORARY DEBUG:
+	// Skip client saved-data initialization to determine whether
+	// StorageFacility111 crashes inside CL_InitClientSavedData().
+	// This will be restored after the source of the crash is identified.
+	// CL_InitClientSavedData();
+
+	Com_Printf("INIT DEBUG: AFTER CL_InitClientSavedData() [SKIPPED]\n");
 
 	UI_LoadResource( "*135" );
 
